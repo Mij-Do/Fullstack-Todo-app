@@ -1,5 +1,6 @@
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
+import InputErrorMessage from "../components/ui/InputErrorMessage";
 import { REGISTER_FORM } from "../data";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
@@ -19,6 +20,7 @@ const Register = () => {
             return (
                 <div key={idx}>
                     <Input type={type} placeholder={placeholder} {...register(name, {required: true, minLength: 5})}/>
+                    {errors.username && errors.username.type === "required" && <InputErrorMessage msg="user name is required!"/>}
                 </div>
             );
         }
