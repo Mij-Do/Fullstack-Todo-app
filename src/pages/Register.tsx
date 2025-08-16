@@ -5,6 +5,9 @@ import { REGISTER_FORM } from "../data";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { registerSchema } from "../validation";
+import axiosInstance from "../config/axios.instance";
+import toast from "react-hot-toast";
+import { useState } from "react";
 
 interface IFormInput {
     username: string;
@@ -13,9 +16,31 @@ interface IFormInput {
 }
 
 const Register = () => {
+    const [isLoading, setIsLoading] = useState(false);
     const { register, handleSubmit, formState: {errors} } = useForm<IFormInput>({resolver: yupResolver(registerSchema)});
-    const onSubmit: SubmitHandler<IFormInput> = (data) => console.log(data);
-    console.log(errors)
+    const onSubmit: SubmitHandler<IFormInput> = async (data) => {
+        setIsLoading(true);
+        try {
+            const {status} = await axiosInstance.post("/auth/local/register", data);
+            if (status === 200) {
+                toast.success(
+                    "You will navigate to the login page after 2 seconds to login.",
+                    {
+                        position: "bottom-center",
+                        duration: 1500,
+                        style: {
+                        backgroundColor: "black",
+                        color: "white",
+                        width: "fit-content",
+                        },
+                    }
+                )};
+        } catch (error) {
+            console.log(error)
+        } finally {
+            setIsLoading(false);
+        }
+    };
     // Renders
     const renderRegisterForm = REGISTER_FORM.map(
             ({ name, placeholder, type, validation }, idx) => {
@@ -34,7 +59,7 @@ const Register = () => {
             </h2>
             <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
                 {renderRegisterForm}
-                <Button fullWidth>
+                <Button fullWidth isLoading={isLoading}>
                     Register
                 </Button>
             </form>
