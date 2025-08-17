@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import { NavLink, useLocation } from "react-router-dom";
 
 const Navbar = () => {
@@ -9,6 +10,18 @@ const Navbar = () => {
             localStorage.removeItem(storageKey);
             setTimeout(() => {
             location.replace(pathname);
+            toast.success(
+                    "Loggedout Succssed.",
+                    {
+                        position: "bottom-center",
+                        duration: 1500,
+                        style: {
+                        backgroundColor: "black",
+                        color: "white",
+                        width: "fit-content",
+                        },
+                    }
+                )
         }, 1500);
     };
     return (
