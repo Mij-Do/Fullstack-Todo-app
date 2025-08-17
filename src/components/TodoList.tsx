@@ -26,7 +26,9 @@ const TodoList = () => {
     // states
     const [queryVersion, setQueryVersion] = useState(1);
     const [isOpenUpdate, setIsOpenUpdate] = useState(false);
+    const [isOpenRemove, setIsOpenRemove] = useState(false);
     const [todoToEdit, setTodoToEdit] = useState(defaultVal);
+    const [todoToRemove, setTodoToRemove] = useState(defaultVal);
     const [isUpdating, setIsUpdating] = useState(false);
     const [errors, setErrors] = useState({
         title: '',
@@ -41,6 +43,14 @@ const TodoList = () => {
     }
     const closeUpdateModal = () => {
         setIsOpenUpdate(false);
+    }
+
+    const openRemoveModal = (todo: ITodo) => {
+        setTodoToRemove(todo)
+        setIsOpenRemove(true);
+    }
+    const closeRemoveModal = () => {
+        setIsOpenRemove(false);
     }
 
     const onSubmitUpdate = async (e: FormEvent<HTMLFormElement>) => {
@@ -86,6 +96,37 @@ const TodoList = () => {
         }
     }
 
+    const onSubmitRemove = async () => {
+        setIsUpdating(true);
+        try {
+            const {status} = await axiosInstance.delete(`/todos/${todoToRemove.documentId}`, {
+                headers: {
+                    Authorization: `Bearer ${userData.jwt}`
+                }
+            })
+            if (status === 200 || 204) {
+                closeRemoveModal();
+                setQueryVersion(prev => prev + 1);
+                toast.success(
+                    "Your Todo is Removed!.",
+                    {
+                        position: "bottom-center",
+                        duration: 1500,
+                        style: {
+                        backgroundColor: "black",
+                        color: "white",
+                        width: "fit-content",
+                        },
+                    }
+                )
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsUpdating(false);
+        }
+    }
+
     const onChangeHandeller = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
         // update
@@ -93,6 +134,13 @@ const TodoList = () => {
             ...todoToEdit,
             [name]: value,
         });
+
+        // remove
+        setTodoToRemove({
+            ...todoToRemove,
+            [name]: value,
+        });
+
         // errors
         setErrors({
             ...errors,
@@ -121,7 +169,7 @@ const TodoList = () => {
                     </p>
                     <div className="flex items-center justify-end w-full space-x-3">
                         <Button variant={"default"} size={"sm"} onClick={() => openUpdateModal(todo)}> Edit </Button>
-                        <Button variant={"danger"} size={"sm"} > Remove </Button>
+                        <Button variant={"danger"} size={"sm"} onClick={() => openRemoveModal(todo)}> Remove </Button>
                     </div>
                 </div>
             )) : <h3> No Todos yet! </h3>} 
@@ -138,6 +186,15 @@ const TodoList = () => {
                         <Button variant={'cancel'} size={'sm'} className='w-full' onClick={closeUpdateModal}>Cancel</Button>
                     </div>
                 </form>
+            </Modal>
+
+            {/* remove modal */}
+            <Modal isOpen={isOpenRemove} onClose={closeRemoveModal} title="Delete Todos!"
+                description="A simple modal that appears to confirm the removal of a todo item, showing the task details with two buttons: one to confirm deletion and one to cancel.">
+                <div className='flex justify-center space-x-3'>
+                    <Button variant={'danger'} size={'sm'} className='w-full' isLoading={isUpdating} onClick={onSubmitRemove}>Yes, Remove</Button>
+                    <Button variant={'cancel'} size={'sm'} className='w-full' onClick={closeRemoveModal}>Cancel</Button>
+                </div>
             </Modal>
         </div>
     )
