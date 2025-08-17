@@ -9,6 +9,7 @@ import axiosInstance from '../config/axios.instance';
 import toast from 'react-hot-toast';
 import { updateInputValidation } from '../validation';
 import InputErrorMessage from "../components/ui/InputErrorMessage";
+import TodoSkeleton from './TodoSkeleton';
 
 
 const TodoList = () => {
@@ -159,7 +160,9 @@ const TodoList = () => {
     });
 
 
-    if (isLoading) return <h3> Loading ... </h3>;
+    if (isLoading) return <div className='space-y-2'>
+        {Array.from({length: 3}, (_, idx) => <TodoSkeleton key={idx}/>)}
+    </div>;
     return (
         <div>
             {data.todos.length ? data.todos.map((todo: ITodo) => (
