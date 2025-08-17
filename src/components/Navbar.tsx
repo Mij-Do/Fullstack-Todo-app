@@ -33,25 +33,24 @@ const Navbar = () => {
                 {userData ? (
                 <div className="flex items-center text-indigo-600 space-x-4">
                     <li className="duration-200 text-lg">
-                    <NavLink to="/todos" className="hover:text-indigo-400 transition">todos</NavLink>
+                        <NavLink to="/todos" className="hover:text-indigo-400 transition">todos</NavLink>
                     </li>
                     <li className="duration-200 text-lg">
-                    <NavLink to="/profile" className="hover:text-indigo-400 transition">Profile</NavLink>
+                        <NavLink to="/profile" className="hover:text-indigo-400 transition">Profile</NavLink>
                     </li>
                     <button
-                    className="bg-indigo-500 text-white p-2 rounded-md cursor-pointer hover:text-indigo-500 hover:bg-white transition-all"
-                    onClick={onLogout}
-                    >
+                        className="bg-indigo-500 text-white p-2 rounded-md cursor-pointer hover:text-indigo-500 hover:bg-white transition-all"
+                        onClick={onLogout}>
                         Logout
                     </button>
                 </div>
                 ) : (
                 <p className="flex items-center space-x-3">
-                    <li className="text-black duration-200 font-semibold text-lg">
-                    <NavLink to="/register">Register</NavLink>
+                    <li className="text-black duration-200 font-semibold text-lg hover:text-indigo-500 transition">
+                        <NavLink to="/register">Register</NavLink>
                     </li>
-                    <li className="text-black duration-200 font-semibold text-lg">
-                    <NavLink to="/login">Login</NavLink>
+                    <li className="text-black duration-200 font-semibold text-lg hover:text-indigo-500 transition">
+                        <NavLink to="/login">Login</NavLink>
                     </li>
                 </p>
                 )}
