@@ -7,6 +7,8 @@ import Textarea from './ui/TextArea';
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import axiosInstance from '../config/axios.instance';
 import toast from 'react-hot-toast';
+import { updateInputValidation } from '../validation';
+import InputErrorMessage from "../components/ui/InputErrorMessage";
 
 
 const TodoList = () => {
@@ -26,6 +28,10 @@ const TodoList = () => {
     const [isOpenUpdate, setIsOpenUpdate] = useState(false);
     const [todoToEdit, setTodoToEdit] = useState(defaultVal);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [errors, setErrors] = useState({
+        title: '',
+        description: ''
+    });
 
 
     // Handellers
@@ -39,6 +45,16 @@ const TodoList = () => {
 
     const onSubmitUpdate = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const errors = updateInputValidation({
+            title: todoToEdit.title,
+            description: todoToEdit.description,
+        });
+        const hasMsgError = Object.values(errors).some(value => value === '') 
+                            && Object.values(errors).every(value => value === '');
+        if (!hasMsgError) {
+            setErrors(errors);
+            return;
+        }
         setIsUpdating(true);
         try {
             const {status} = await axiosInstance.put(`/todos/${todoToEdit.documentId}`, 
@@ -70,13 +86,18 @@ const TodoList = () => {
         }
     }
 
-    const onUpdate = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const onChangeHandeller = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
-
+        // update
         setTodoToEdit({
             ...todoToEdit,
             [name]: value,
-        })
+        });
+        // errors
+        setErrors({
+            ...errors,
+            [name]: '',
+        });
     }
 
     const {isLoading, data} = customQueryHook({
@@ -108,8 +129,10 @@ const TodoList = () => {
             {/* update modal */}
             <Modal isOpen={isOpenUpdate} onClose={closeUpdateModal} title='Update Modal'>
                 <form className='space-y-2' onSubmit={onSubmitUpdate}>
-                    <Input name='title' value={todoToEdit.title} onChange={onUpdate}/>
-                    <Textarea name='description' value={todoToEdit.description} onChange={onUpdate}/>
+                    <Input name='title' value={todoToEdit.title} onChange={onChangeHandeller}/>
+                    {errors.title && <InputErrorMessage msg={errors.title}/>}
+                    <Textarea name='description' value={todoToEdit.description} onChange={onChangeHandeller}/>
+                    {errors.description && <InputErrorMessage msg={errors.description}/>}
                     <div className='flex justify-center space-x-3'>
                         <Button variant={'default'} size={'sm'} className='w-full' isLoading={isUpdating}>Update</Button>
                         <Button variant={'cancel'} size={'sm'} className='w-full' onClick={closeUpdateModal}>Cancel</Button>
