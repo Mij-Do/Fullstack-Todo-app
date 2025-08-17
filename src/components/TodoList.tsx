@@ -1,7 +1,6 @@
 import Button from './ui/Button';
-import axiosInstance from '../config/axios.instance';
 import type { ITodo } from '../interfaces';
-import { useQuery } from '@tanstack/react-query';
+import { customQueryHook } from '../hooks';
 
 
 const TodoList = () => {
@@ -10,17 +9,16 @@ const TodoList = () => {
     const userDataString = localStorage.getItem(storageKey);
     const userData = userDataString ? JSON.parse(userDataString) : null;
 
-    const {isLoading, data, error} = useQuery({
+    const {isLoading, data} = customQueryHook({
         queryKey: ["todos"],
-        queryFn: async () => {
-            const {data} = await axiosInstance.get("/users/me?populate=todos", {
-                headers: {
-                    Authorization: `Bearer ${userData.jwt}`,
-                }
-            })
-            return data;
+        url: "/users/me?populate=todos",
+        config: {
+            headers: {
+                Authorization: `Bearer ${userData.jwt}`
+            }
         }
     });
+
 
     if (isLoading) return <h3> Loading ... </h3>;
     return (
