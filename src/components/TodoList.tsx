@@ -26,18 +26,34 @@ const TodoList = () => {
 
     // states
     const [queryVersion, setQueryVersion] = useState(1);
+    const [isOpenAdd, setIsOpenAdd] = useState(false);
     const [isOpenUpdate, setIsOpenUpdate] = useState(false);
     const [isOpenRemove, setIsOpenRemove] = useState(false);
-    const [todoToEdit, setTodoToEdit] = useState(defaultVal);
+    const [todoToAdd, setTodoToAdd] = useState({
+        title: "",
+        description: "",
+    });
+    const [todoToEdit, setTodoToEdit] = useState<ITodo>(defaultVal);
     const [todoToRemove, setTodoToRemove] = useState(defaultVal);
     const [isUpdating, setIsUpdating] = useState(false);
     const [errors, setErrors] = useState({
         title: '',
-        description: ''
+        description: '',
     });
 
 
     // Handellers
+    const opeAddeModal = () => {
+        setIsOpenAdd(true);
+    }
+    const closeAddModal = () => {
+        setTodoToAdd({
+            title: "",
+            description: "",
+        });
+        setIsOpenAdd(false);
+    }
+
     const openUpdateModal = (todo: ITodo) => {
         setTodoToEdit(todo);
         setIsOpenUpdate(true);
@@ -52,6 +68,53 @@ const TodoList = () => {
     }
     const closeRemoveModal = () => {
         setIsOpenRemove(false);
+    }
+
+
+    const onSubmitAdd = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const errors = updateInputValidation({
+            title: todoToAdd.title,
+            description: todoToAdd.description,
+        });
+        const hasMsgError = Object.values(errors).some(value => value === '') 
+                            && Object.values(errors).every(value => value === '');
+        if (!hasMsgError) {
+            setErrors(errors);
+            return;
+        }
+
+        setIsUpdating(true);
+        try {
+            const {status} = await axiosInstance.post(`/todos`, 
+                {data: {title: todoToAdd.title, description: todoToAdd.description, user: [userData.user.documentId]}},
+                {
+                    headers: {
+                        Authorization: `Bearer ${userData.jwt}`
+                    }
+                }
+            )
+            if (status === 200 || status === 201 || status === 204) {
+                closeAddModal();
+                setQueryVersion(prev => prev + 1);
+                toast.success(
+                    "Your Todo is Added!.",
+                    {
+                        position: "bottom-center",
+                        duration: 1500,
+                        style: {
+                        backgroundColor: "black",
+                        color: "white",
+                        width: "fit-content",
+                        },
+                    }
+                )
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsUpdating(false);
+        }
     }
 
     const onSubmitUpdate = async (e: FormEvent<HTMLFormElement>) => {
@@ -105,7 +168,7 @@ const TodoList = () => {
                     Authorization: `Bearer ${userData.jwt}`
                 }
             })
-            if (status === 200 || 204) {
+            if (status === 200 ||status === 204) {
                 closeRemoveModal();
                 setQueryVersion(prev => prev + 1);
                 toast.success(
@@ -130,6 +193,12 @@ const TodoList = () => {
 
     const onChangeHandeller = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const {name, value} = e.target;
+        // add
+        setTodoToAdd({
+            ...todoToAdd,
+            [name]: value,
+        });
+
         // update
         setTodoToEdit({
             ...todoToEdit,
@@ -165,6 +234,9 @@ const TodoList = () => {
     </div>;
     return (
         <div>
+            <div className='flex justify-center my-10'>
+                <Button variant={'default'} size={'sm'} onClick={opeAddeModal}> Add New Todo</Button>
+            </div>
             {data.todos.length ? data.todos.map((todo: ITodo) => (
                 <div key={todo.id} className="flex items-center justify-between hover:bg-gray-100 duration-300 p-3 rounded-md even:bg-gray-100">
                     <p className="w-full font-semibold">
@@ -177,8 +249,22 @@ const TodoList = () => {
                 </div>
             )) : <h3> No Todos yet! </h3>} 
 
+            {/* add modal */}
+            <Modal isOpen={isOpenAdd} onClose={closeAddModal} title='Add Todo Modal'>
+                <form className='space-y-2' onSubmit={onSubmitAdd}>
+                    <Input name='title' value={todoToAdd.title} onChange={onChangeHandeller}/>
+                    {errors.title && <InputErrorMessage msg={errors.title}/>}
+                    <Textarea name='description' value={todoToAdd.description} onChange={onChangeHandeller}/>
+                    {errors.description && <InputErrorMessage msg={errors.description}/>}
+                    <div className='flex justify-center space-x-3'>
+                        <Button variant={'default'} size={'sm'} className='w-full' isLoading={isUpdating}>Add</Button>
+                        <Button variant={'cancel'} size={'sm'} className='w-full' onClick={closeAddModal}>Cancel</Button>
+                    </div>
+                </form>
+            </Modal>
+
             {/* update modal */}
-            <Modal isOpen={isOpenUpdate} onClose={closeUpdateModal} title='Update Modal'>
+            <Modal isOpen={isOpenUpdate} onClose={closeUpdateModal} title='Update Todo Modal'>
                 <form className='space-y-2' onSubmit={onSubmitUpdate}>
                     <Input name='title' value={todoToEdit.title} onChange={onChangeHandeller}/>
                     {errors.title && <InputErrorMessage msg={errors.title}/>}
@@ -192,7 +278,7 @@ const TodoList = () => {
             </Modal>
 
             {/* remove modal */}
-            <Modal isOpen={isOpenRemove} onClose={closeRemoveModal} title="Delete Todos!"
+            <Modal isOpen={isOpenRemove} onClose={closeRemoveModal} title="Delete Todo Modal"
                 description="A simple modal that appears to confirm the removal of a todo item, showing the task details with two buttons: one to confirm deletion and one to cancel.">
                 <div className='flex justify-center space-x-3'>
                     <Button variant={'danger'} size={'sm'} className='w-full' isLoading={isUpdating} onClick={onSubmitRemove}>Yes, Remove</Button>
