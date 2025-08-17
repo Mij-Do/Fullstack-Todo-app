@@ -25,24 +25,24 @@ const Navbar = () => {
         }, 1500);
     };
     return (
-        <nav className="max-w-lg mx-auto mt-7 mb-20 px-3 py-5 rounded-md">
+        <nav className="mx-auto mt-7 mb-20 px-3 py-5 rounded-md bg-gray-100">
             <ul className="flex items-center justify-between">
                 <li className="text-black duration-200 font-semibold text-lg">
-                <NavLink to="/">Home</NavLink>
+                    <NavLink to="/" className="hover:text-indigo-500 transition">Home</NavLink>
                 </li>
                 {userData ? (
                 <div className="flex items-center text-indigo-600 space-x-4">
                     <li className="duration-200 text-lg">
-                    <NavLink to="/todos">todos</NavLink>
+                    <NavLink to="/todos" className="hover:text-indigo-400 transition">todos</NavLink>
                     </li>
                     <li className="duration-200 text-lg">
-                    <NavLink to="/profile">Profile</NavLink>
+                    <NavLink to="/profile" className="hover:text-indigo-400 transition">Profile</NavLink>
                     </li>
                     <button
-                    className="bg-indigo-500 text-white p-2 rounded-md cursor-pointer"
+                    className="bg-indigo-500 text-white p-2 rounded-md cursor-pointer hover:text-indigo-500 hover:bg-white transition-all"
                     onClick={onLogout}
                     >
-                    Logout
+                        Logout
                     </button>
                 </div>
                 ) : (

@@ -41,8 +41,8 @@ const router = createBrowserRouter(
                             redirectPath="/login"
                             data={userData}
                         >
-                        <h2>Profile page</h2>
-                    </ProtectedRoute>
+                            <h2>Profile page</h2>
+                        </ProtectedRoute>
                 }
                 />
                 <Route
