@@ -4,13 +4,17 @@ import { customQueryHook } from '../hooks';
 import Modal from './ui/Modal';
 import Input from './ui/Input';
 import Textarea from './ui/TextArea';
-import { useState, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
+import axiosInstance from '../config/axios.instance';
+import toast from 'react-hot-toast';
 
 
 const TodoList = () => {
     const defaultVal = {
+        id: 0,
         title: '',
-        description: ''
+        description: '',
+        documentId: '',
     }
     const storageKey = "loggedInUser";
     const userDataString = localStorage.getItem(storageKey);
@@ -18,8 +22,10 @@ const TodoList = () => {
 
 
     // states
+    const [queryVersion, setQueryVersion] = useState(1);
     const [isOpenUpdate, setIsOpenUpdate] = useState(false);
     const [todoToEdit, setTodoToEdit] = useState(defaultVal);
+    const [isUpdating, setIsUpdating] = useState(false);
 
 
     // Handellers
@@ -31,12 +37,50 @@ const TodoList = () => {
         setIsOpenUpdate(false);
     }
 
-    const onSubmitUpdate = (e: FormEvent<HTMLFormElement>) => {
+    const onSubmitUpdate = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setIsUpdating(true);
+        try {
+            const {status} = await axiosInstance.put(`/todos/${todoToEdit.documentId}`, 
+                {data: {title: todoToEdit.title, description: todoToEdit.description}}, {
+                    headers: {
+                        Authorization: `Bearer ${userData.jwt}`
+                    }
+                })
+            if (status === 200) {
+                closeUpdateModal();
+                setQueryVersion(prev => prev + 1);
+                toast.success(
+                    "Your Todo is Updated!.",
+                    {
+                        position: "bottom-center",
+                        duration: 1500,
+                        style: {
+                        backgroundColor: "black",
+                        color: "white",
+                        width: "fit-content",
+                        },
+                    }
+                )
+            }
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsUpdating(false);
+        }
+    }
+
+    const onUpdate = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const {name, value} = e.target;
+
+        setTodoToEdit({
+            ...todoToEdit,
+            [name]: value,
+        })
     }
 
     const {isLoading, data} = customQueryHook({
-        queryKey: ["todos"],
+        queryKey: ["todoList", `${queryVersion}`],
         url: "/users/me?populate=todos",
         config: {
             headers: {
@@ -64,10 +108,10 @@ const TodoList = () => {
             {/* update modal */}
             <Modal isOpen={isOpenUpdate} onClose={closeUpdateModal} title='Update Modal'>
                 <form className='space-y-2' onSubmit={onSubmitUpdate}>
-                    <Input value={todoToEdit.title}/>
-                    <Textarea value={todoToEdit.description}/>
+                    <Input name='title' value={todoToEdit.title} onChange={onUpdate}/>
+                    <Textarea name='description' value={todoToEdit.description} onChange={onUpdate}/>
                     <div className='flex justify-center space-x-3'>
-                        <Button variant={'default'} size={'sm'} className='w-full'>Update</Button>
+                        <Button variant={'default'} size={'sm'} className='w-full' isLoading={isUpdating}>Update</Button>
                         <Button variant={'cancel'} size={'sm'} className='w-full' onClick={closeUpdateModal}>Cancel</Button>
                     </div>
                 </form>
