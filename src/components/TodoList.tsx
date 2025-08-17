@@ -1,29 +1,30 @@
-import { useEffect, useState } from 'react';
 import Button from './ui/Button';
 import axiosInstance from '../config/axios.instance';
 import type { ITodo } from '../interfaces';
+import { useQuery } from '@tanstack/react-query';
 
 
 const TodoList = () => {
-    const [todos, setTodos] = useState([]);
+
     const storageKey = "loggedInUser";
     const userDataString = localStorage.getItem(storageKey);
     const userData = userDataString ? JSON.parse(userDataString) : null;
 
-    useEffect (() => {
-        try {
-            axiosInstance.get("/users/me?populate=todos", {
+    const {isLoading, data, error} = useQuery({
+        queryKey: ["todos"],
+        queryFn: async () => {
+            const {data} = await axiosInstance.get("/users/me?populate=todos", {
                 headers: {
                     Authorization: `Bearer ${userData.jwt}`,
                 }
-            }).then(res => setTodos(res.data.todos))
-                .catch(error => console.log("error:", error));
-        } catch (error) {
-            console.log(error)
+            })
+            return data;
         }
-    }, [userData.jwt])
+    });
+
+    if (isLoading) return <h3> Loading ... </h3>;
     return (
-        todos.map((todo: ITodo) => (
+        data.todos.length ? data.todos.map((todo: ITodo) => (
             <div key={todo.id} className="flex items-center justify-between hover:bg-gray-100 duration-300 p-3 rounded-md even:bg-gray-100">
                 <p className="w-full font-semibold">
                     {todo.id}- {todo.title}
@@ -33,7 +34,7 @@ const TodoList = () => {
                     <Button variant={"danger"} size={"sm"} > Remove </Button>
                 </div>
             </div>
-        ))
+        )) : <h3> No Todos yet! </h3>
     )
 }
 
