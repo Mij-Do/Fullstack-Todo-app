@@ -1,15 +1,42 @@
-import type { TextareaHTMLAttributes } from "react";
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
+import { type ReactNode } from 'react';
 
-interface IProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {}
+interface IProps {
+    title?: string;
+    description?: string;
+    children: ReactNode;
+    isOpen: boolean; 
+    onClose: () => void;
+}
 
-const Textarea = ({ ...rest }: IProps) => {
-    return (
-        <textarea
-            className="border-[1px] border-gray-300 shadow-md focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600 rounded-lg px-3 py-3 text-md w-full bg-transparent"
-            rows={6}
-            {...rest}
-        />
-    );
-};
+const Modal = ({isOpen, onClose, title, description, children}: IProps) => {
 
-export default Textarea;
+
+return (
+<>
+    <Dialog open={isOpen} as="div" className="relative z-10 focus:outline-none" onClose={onClose} __demoMode>
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div className="flex min-h-full backdrop-blur-md items-center justify-center p-4">
+                <DialogPanel
+                    transition
+                    className="w-full max-w-md rounded-xl bg-white/80 p-6 backdrop-blur-2xl duration-300 ease-out data-closed:transform-[scale(95%)] data-closed:opacity-0"
+                >
+                    <DialogTitle as="h3" className="text-base/7 font-medium text-indigo-500">
+                        {title}
+                    </DialogTitle>
+
+                    <div className='mt-4'>
+                        <div className='mb-4 text-indigo-500'>
+                            {description}
+                        </div>
+                        {children}
+                    </div>
+                </DialogPanel>
+            </div>
+        </div>
+    </Dialog>
+</>
+)
+}
+
+export default Modal;
