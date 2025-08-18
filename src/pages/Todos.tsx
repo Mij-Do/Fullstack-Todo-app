@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import Paginator from "../components/ui/Paginator";
 import { customQueryHook } from "../hooks";
 import type { ITodo } from "../interfaces";
@@ -10,6 +10,8 @@ const TodosPage = () => {
 
     // states 
     const [page, setPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(10);
+    const [sort, setSort] = useState<string>("DESC");
 
     // handellers
     const onClickPrev = () => {
@@ -19,9 +21,17 @@ const TodosPage = () => {
         setPage(prev => prev + 1);
     }
 
+    const onChangePageSize = (e: ChangeEvent<HTMLSelectElement>) => {
+        setPageSize(+e.target.value);
+    }
+
+    const onChangeSort = (e: ChangeEvent<HTMLSelectElement>) => {
+        setSort(e.target.value);
+    }
+
     const {isLoading, isFetching, data} = customQueryHook({
-            queryKey: [`todos-page-${page}`],
-            url: "/todos?pagination[pageSize]=10&pagination[page]=1",
+            queryKey: [`todos-page-${page}-${pageSize}-${sort}`],
+            url: `/todos?pagination[pageSize]=${pageSize}&pagination[page]=${page}&sort=createdAt:${sort}`,
             config: {
                 headers: {
                     Authorization: `Bearer ${userData.jwt}`
@@ -38,6 +48,27 @@ const TodosPage = () => {
         
     return (
         <div>
+            <div className="flex justify-center space-x-3 mb-10">
+                <select 
+                    className="p-2 outline-0 border border-indigo-500 rounded-md"
+                    value={pageSize}
+                    onChange={onChangePageSize}
+                >
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+
+                <select
+                    className="p-2 outline-0 border border-indigo-500 rounded-md"
+                    value={sort}
+                    onChange={onChangeSort}
+                >
+                    <option value="DESC">DESC</option>
+                    <option value="ASC">ASC</option>
+                </select>
+            </div>
             {data.data.length ? data.data.map((todo: ITodo) => (
                 <div key={todo.id} className="flex items-center justify-between hover:bg-gray-100 duration-300 p-3 rounded-md even:bg-gray-100">
                     <p className="w-full font-semibold">
