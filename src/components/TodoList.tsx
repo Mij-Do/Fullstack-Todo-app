@@ -25,7 +25,7 @@ const TodoList = () => {
 
 
     // states
-    const [queryVersion, setQueryVersion] = useState(1);
+    const [queryVersion, setQueryVersion] = useState<number>(1);
     const [isOpenAdd, setIsOpenAdd] = useState(false);
     const [isOpenUpdate, setIsOpenUpdate] = useState(false);
     const [isOpenRemove, setIsOpenRemove] = useState(false);
@@ -230,8 +230,11 @@ const TodoList = () => {
 
 
     if (isLoading) return <div className='space-y-2'>
-        {Array.from({length: 3}, (_, idx) => <TodoSkeleton key={idx}/>)}
-    </div>;
+                                <div className="flex items-center justify-center">
+                                    <div className=" w-20 h-9 bg-gray-300 rounded-md dark:bg-gray-700"></div>
+                                </div>
+                                {Array.from({length: 3}, (_, idx) => <TodoSkeleton key={idx}/>)}
+                            </div>;
     return (
         <div>
             <div className='flex justify-center my-10'>
@@ -272,7 +275,7 @@ const TodoList = () => {
                     {errors.description && <InputErrorMessage msg={errors.description}/>}
                     <div className='flex justify-center space-x-3'>
                         <Button variant={'default'} size={'sm'} className='w-full' isLoading={isUpdating}>Update</Button>
-                        <Button variant={'cancel'} size={'sm'} className='w-full' onClick={closeUpdateModal}>Cancel</Button>
+                        <Button variant={'cancel'} size={'sm'} className='w-full' type='button' onClick={closeUpdateModal}>Cancel</Button>
                     </div>
                 </form>
             </Modal>
